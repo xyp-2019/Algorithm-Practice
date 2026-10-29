@@ -162,3 +162,75 @@ public:
 // 时间复杂度：O(MN)，其中 M 和 N 分别为行数和列数。
 
 // 空间复杂度：O(min(M,N))，在最坏情况下，整个网格均为陆地，队列的大小可以达到 min(M,N)。
+
+class Solution 
+{
+public:
+    int orangesRotting(vector<vector<int>>& grid) 
+	{
+        queue<pair<int,int>>q;	// 队列，存放腐烂橘子的坐标，BFS用
+		
+        int dirs[4][2]={{0,1},{0,-1},{1,0},{-1,0}};	// 四个方向：右、左、下、上
+		
+        int m=grid.size(),n=grid[0].size();	// m是行数，n是列数
+		
+        int cnt=0;	//新鲜橘子的数量
+		
+		// 遍历整个网格
+        for(int i=0;i<m;i++)
+            for(int j=0;j<n;j++)
+                if(grid[i][j]==2)	//找到第一轮腐烂橘子
+                    q.push({i,j});
+					
+                else if(grid[i][j]==1)
+                    cnt++;	// 统计新鲜橘子总数
+		
+		// 队列为空（没有腐烂橘子）但还有新鲜橘子 → 永远烂不掉
+        if(q.empty()&&cnt)	//如果没有腐烂橘子并且有新鲜橘子，则新鲜橘子不可能腐烂
+            return -1;
+			
+        int ans=0;	// 记录总时间
+		
+        while(!q.empty())	// BFS循环，一层一层扩散
+        {
+            int t=q.size();	//遍历同一时间感染的橘子
+			
+            for(int k=0;k<t;k++)
+            {
+                pair<int,int>p=q.front();	// 取出队首腐烂橘子坐标
+				
+                q.pop();	// 弹出队首
+				
+                for(auto dir:dirs)	// 遍历四个方向
+                {
+                    int x=p.first+dir[0];	// 新坐标x
+					
+                    int y=p.second+dir[1];	// 新坐标y
+					
+                    if(x>=0&&x<m&&y>=0&&y<n&&grid[x][y]==1)	//找到新感染的橘子
+                    {
+                        grid[x][y]=2;	// 标记为腐烂
+						
+                        q.push({x,y});	// 标记为腐烂
+						
+                        cnt--;	// 新鲜橘子数量减1
+                    }
+                }
+            }
+			
+            if(!q.empty())//如果当前轮有新感染的橘子，时间加一
+                ans++;
+        }
+		
+        if(cnt)	//如果还有没被感染的新鲜橘子
+            return -1;
+			
+        return ans;
+    }
+};
+
+// 复杂度分析
+
+// 时间复杂度：O(nm)。即进行一次广度优先搜索的时间，其中 n,m 分别为 grid 的行数与列数。
+
+// 空间复杂度：O(nm)。需要额外的 dis 数组记录每个新鲜橘子被腐烂的最短时间，大小为 O(nm)，且广度优先搜索中队列里存放的状态最多不会超过 nm 个，最多需要 O(nm) 的空间，所以最后的空间复杂度为 O(nm)。
